@@ -2,12 +2,13 @@
  * Main application file
  */
 
+//Starting point of the server, called from an root/index.js
 'use strict';
 
-import express from 'express';
-import mongoose from 'mongoose';
+import express from 'express'; // express is a node server
+import mongoose from 'mongoose'; // database connection layer
 mongoose.Promise = require('bluebird');
-import config from './config/environment';
+import config from './config/environment'; //gets my configurations
 import http from 'http';
 
 // Connect to MongoDB
@@ -29,7 +30,7 @@ var socketio = require('socket.io')(server, {
 });
 require('./config/socketio').default(socketio);
 require('./config/express').default(app);
-require('./routes').default(app);
+require('./routes').default(app); //get routes from root/routs.js
 
 // Start server
 function startServer() {
