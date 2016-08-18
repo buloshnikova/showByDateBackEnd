@@ -31,6 +31,7 @@ var socketio = require('socket.io')(server, {
 require('./config/socketio').default(socketio);
 require('./config/express').default(app);
 require('./routes').default(app); //get routes from root/routs.js
+require('events').EventEmitter.prototype._maxListeners = 0;
 
 // Start server
 function startServer() {

@@ -3,34 +3,12 @@
 import mongoose from 'mongoose';
 
 var EventSchema = new mongoose.Schema({
-  eventType: String,
+  eventType: {type: mongoose.Schema.Types.ObjectId, ref: 'EventType'},
   name: String,
   url: String,
-  location: {
-    locationType: String,
-    address: {
-      addressType: String,
-      addressLocality: String,
-      addressCountry: String,
-      streetAddress: String,
-      postalCode: String
-    },
-    locationName: String,
-    locationUrl: String,
-    geo: {
-      geotype: String,
-      latitude: Number,
-      longitude: Number
-    }
-  },
+  location: {type: mongoose.Schema.Types.ObjectId, ref: 'Location'},
   startDate: Date,
-  performer: [
-    {
-      performerType: String,
-      name: String,
-      performerUrl: String
-    }
-  ],
+  performer: [{type: mongoose.Schema.Types.ObjectId, ref: 'Performer'}],
   website: String, // TODO: create an object for websites holding website_name, website_url, website_rating, website_icon
   price: String,
   eventImage: String,

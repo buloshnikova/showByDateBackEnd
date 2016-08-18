@@ -72,14 +72,18 @@ function handleError(res, statusCode) {
 
 // Gets a list of Events
 export function index(req, res) {
-  return Event.find().exec()
+  return Event.find()
+    .populate('eventType performer location')
+    .exec()
     .then(respondWithResult(res))
     .catch(handleError(res));
 }
 
 // Gets a single Event from the DB
 export function show(req, res) {
-  return Event.findById(req.params.id).exec()
+  return Event.findById(req.params.id)
+    .populate('eventType')
+    .exec()
     .then(handleEntityNotFound(res))
     .then(respondWithResult(res))
     .catch(handleError(res));
