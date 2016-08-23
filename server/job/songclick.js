@@ -93,6 +93,7 @@ function parceResult(arr, res) {
     for (var i  in arr) {
       out.push({
         name: arr[i][0]['name'],
+        url: arr[i][1]['url'],
         location: data[i]
       })
     }
@@ -158,7 +159,7 @@ function parceResult(arr, res) {
         },
         function (callback) {
           outItem.name = item.name;
-          outItem.url = item.sameAs;
+          outItem.url = item.url;
           outItem.startDate = item.startDate;
           outItem.website = null;
           outItem.price = null;
