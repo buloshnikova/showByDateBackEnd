@@ -33,24 +33,17 @@ function scrape(url, data, cb) {
     }
 
     // 2. Parse the HTML
-    let $ = cheerio.load(body)
-      , pageData = []
-      ;
-
-    //3. Extract the data
-    //Object.keys(data).forEach(k => {
-    //  pageData[k] = $(data[k]).text();
-    //});
+    let $ = cheerio.load(body), pageData = [];
     var count = 0;
-    //var list=$(".listing li").contents();
-    //$(".w3-navbar li").each(function(i, elem) {
-
-    $("#event-listings li[title] .microformat script").each(function (i, elem) {
-      //var title = $(this,".microformat script").html();
-      //var date = $(this).attr('title');
-      pageData.push(JSON.parse($(this).text()))
-
+    $("#event-listings li[title]").each(function (i, elem) {
+      let el = cheerio.load($(this).html());
+      let obj = JSON.parse(el(".microformat script").text());
+      obj=obj[0]
+      obj.url = "https://www.songkick.com" + el(".thumb").attr("href");
+      obj.eventImage = el('.thumb img').attr("src");
+      pageData.push(obj);
     });
+
     cb(null, pageData);
   });
 }
@@ -72,22 +65,17 @@ export function getHtmlPage(req, res) {
     // ...and the description
     , description: ".listing li"
   }, (err, data) => {
-    console.log("pre Output", err || data);
+    //console.log("pre Output", err || data);
     parceResult(data, res);
     //return res.status(200).json({data: data});
   });
- // parceResult(parsedJSON, res);
+  // parceResult(parsedJSON, res);
 }
 
 function parceResult(arr, res) {
+  //console.log("Arr: ",arr)
   let locations = [];
   let eventsTypes = [];
-
-  for (var i in arr) {
-    //console.log("Log: ", i);
-    locations.push(arr[i][0]["location"]);
-    //locations.push(arr[i][0]["location"]);
-  }
   let traceOutput = function (data) {
     var out = [];
     for (var i  in arr) {
@@ -104,27 +92,16 @@ function parceResult(arr, res) {
     traceOutput(data);
     //return res.status(200).json(data);
   }
-  // let loc = LocationToID.locationToID(locations, cb);
   let out = [];
   let index = 0;
   async.eachSeries(arr,
     function (item, next) {
-
-      item = item[0];
       let outItem = {};
       async.waterfall([
         function (callback) {
-          callback(null, 'one', 'two');
-        },
-      ], function (err, result) {
-        // result now equals 'done'
-      });
-      async.waterfall([
-        function (callback) {
           show_by_date_event.findOne({name: item.name})
-            .then(function (responce) {
-              console.log("Event from db: ", responce);
-              if (responce !== null) {
+            .then(function (response) {
+              if (response !== null) {
                 callback(true);
               } else {
                 callback(null);
@@ -158,14 +135,16 @@ function parceResult(arr, res) {
           //callback(null, 'three');
         },
         function (callback) {
+
           outItem.name = item.name;
           outItem.url = item.url;
           outItem.startDate = item.startDate;
           outItem.website = null;
           outItem.price = null;
-          outItem.eventImage = null;
+          outItem.eventImage = item.eventImage;
           outItem.active = true;
           console.log("Create: ", outItem.name);
+
           show_by_date_event.create(outItem)
             .then(function (res) {
               callback(null, 'done');
