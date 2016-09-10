@@ -2,13 +2,18 @@
 
 // Import the dependencies
 import _ from 'lodash';
-var async = require('async');
 import show_by_date_event from '../api/event/event.model';
+import website from '../api/website/website.model';
+
 const cheerio = require("cheerio"), req = require("tinyreq");
+const songkickName = "Songkick";
+var songkickID = "";
+var async = require('async');
 var locationToID = require('./util/locationToID');
 var eventTypeToID = require('./util/eventTypeToID');
 var performerToID = require('./util/performerToID');
-var parsedJSON = require('./fakeData.json');
+var moment = require('moment');
+
 // Define the scrape function
 function respondWithResult(res, statusCode) {
   statusCode = statusCode || 200;
@@ -18,12 +23,14 @@ function respondWithResult(res, statusCode) {
     }
   };
 }
+
 function handleError(res, statusCode) {
   statusCode = statusCode || 500;
   return function (err) {
     res.status(statusCode).send(err);
   };
 }
+
 function scrape(url, data, cb) {
   // 1. Create the request
   req(url, (err, body) => {
@@ -53,47 +60,53 @@ function locationCB(data) {
 
   respondWithResult(data, 200);
 }
+
 export function getHtmlPage(req, res) {
 //console.log(parsedJSON);
   console.log(req.dateFrom, req.dateTo);
-  scrape("https://www.songkick.com/metro_areas/24426-uk-london?utf8=true&filters[minDate]="
-    + req.dateFrom + "&filters[maxDate]="
-    + req.dateTo + "#date-filter-form", {
+  let dateFrom = encodeURI(moment().format('DD/MM/YYYY'));
+  let dateTo = encodeURI(moment().add(6, 'months').format('DD/MM/YYYY'));
+  if (req.dateFrom !== null){
+    dateFrom = req.dateFrom;
+  }
+  if (req.dateTo !== null) {
+    dateTo = req.dateTo;
+  }
+  scrape("https://www.songkick.com/metro_areas/24426-uk-london?utf8=true" //&filters[minDate]="+ dateFrom + "&filters[maxDate]="+ dateTo + "#date-filter-form"
+, {
     //scrape("http://www.w3schools.com/", {
     // Get the website title (from the top header)
     title: "a.w3schools-logo"
     // ...and the description
     , description: ".listing li"
   }, (err, data) => {
-    //console.log("pre Output", err || data);
-    parceResult(data, res);
-    //return res.status(200).json({data: data});
+
+  //check the db for a songlick website
+  website.findOne({name: songkickName})
+      .then(function(response){
+        if (response !== null){
+          songkickID = response._id;
+          parceResult(data, res);
+        } else {
+          website.create({
+              name: songkickName,
+              websiteUrl: "https://www.songkick.com",
+              rating: 5,
+              logoUrl: "https://www.songkick.com",
+              defaultImageUrl: "http://assets.sk-static.com/assets/default_images/huge_avatar/default-event-798b09a.png",
+              active: true
+          }).then(function(response){
+            songkickID = response._id;
+            parceResult(data, res);
+          });
+        }
+      });
   });
-  // parceResult(parsedJSON, res);
 }
 
 function parceResult(arr, res) {
   //console.log("Arr: ",arr)
-  let locations = [];
-  let eventsTypes = [];
-  let traceOutput = function (data) {
-    var out = [];
-    for (var i  in arr) {
-      out.push({
-        name: arr[i][0]['name'],
-        url: arr[i][1]['url'],
-        location: data[i]
-      })
-    }
-    return res.status(200).json(out);
-  }
-  let cb = function (data) {
-    console.log(data);
-    traceOutput(data);
-    //return res.status(200).json(data);
-  }
   let out = [];
-  let index = 0;
   async.eachSeries(arr,
     function (item, next) {
       let outItem = {};
@@ -139,9 +152,9 @@ function parceResult(arr, res) {
           outItem.name = item.name;
           outItem.url = item.url;
           outItem.startDate = item.startDate;
-          outItem.website = null;
+          outItem.website = songkickID;
           outItem.price = null;
-          outItem.eventImage = item.eventImage;
+          outItem.eventImage ="http:" + item.eventImage;
           outItem.active = true;
           console.log("Create: ", outItem.name);
 
@@ -165,5 +178,9 @@ function parceResult(arr, res) {
       // console.log(out);
       return res.status(200).json(out)
     })
+
+}
+
+function checkWebsiteInDB(){
 
 }

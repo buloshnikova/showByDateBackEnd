@@ -8,6 +8,7 @@
 import express from 'express'; // express is a node server
 import mongoose from 'mongoose'; // database connection layer
 mongoose.Promise = require('bluebird');
+var cors = require('cors')
 import config from './config/environment'; //gets my configurations
 import http from 'http';
 
@@ -23,6 +24,7 @@ if (config.seedDB) { require('./config/seed'); }
 
 // Setup server
 var app = express();
+app.use(cors());
 var server = http.createServer(app);
 var socketio = require('socket.io')(server, {
   serveClient: config.env !== 'production',

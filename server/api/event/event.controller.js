@@ -73,7 +73,7 @@ function handleError(res, statusCode) {
 // Gets a list of Events
 export function index(req, res) {
   return Event.find()
-    .populate('eventType performer location')
+    .populate('eventType performer location website')
     .exec()
     .then(respondWithResult(res))
     .catch(handleError(res));

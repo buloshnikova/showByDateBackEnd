@@ -9,7 +9,7 @@ var EventSchema = new mongoose.Schema({
   location: {type: mongoose.Schema.Types.ObjectId, ref: 'Location'},
   startDate: Date,
   performer: [{type: mongoose.Schema.Types.ObjectId, ref: 'Performer'}],
-  website: String, // TODO: create an object for websites holding website_name, website_url, website_rating, website_icon
+  website: {type: mongoose.Schema.Types.ObjectId, ref: 'Website'},
   price: String,
   eventImage: String,
   active: Boolean
