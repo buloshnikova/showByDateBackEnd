@@ -2,12 +2,11 @@
 
 // Import the dependencies
 import _ from 'lodash';
-import show_by_date_event from '../api/event/event.model';
 import website from '../api/website/website.model';
 
 const cheerio = require("cheerio"), req = require("tinyreq");
-const songkickName = "Songkick";
-var songkickID = "";
+const webSiteName = "tickets.london";
+var webSiteID = "";
 var async = require('async');
 var saveToDB = require('./util/saveToDB');
 var moment = require('moment');
@@ -65,23 +64,23 @@ function locationCB(data) {
 
   respondWithResult(data, 200);
 }
-function getSongKickID(res) {
-  website.findOne({name: songkickName})
+function getWebSiteID(res) {
+  website.findOne({name: webSiteName})
     .then(function (response) {
       if (response !== null) {
-        songkickID = response._id;
+        webSiteID = response._id;
         //parceResult(data, res);
         getHtmlPage();
       } else {
         website.create({
-          name: songkickName,
-          websiteUrl: "https://www.songkick.com",
+          name: webSiteName,
+          websiteUrl: "http://www.visitlondon.com",
           rating: 5,
-          logoUrl: "https://www.songkick.com",
+          logoUrl: "https://pbs.twimg.com/profile_images/771414363307708416/MxAAQdjT.jpg",
           defaultImageUrl: "http://assets.sk-static.com/assets/default_images/huge_avatar/default-event-798b09a.png",
           active: true
         }).then(function (response) {
-          songkickID = response._id;
+          webSiteID = response._id;
           getHtmlPage();
         });
       }
@@ -90,7 +89,7 @@ function getSongKickID(res) {
 export function job(req, res) {
   console.log("Started");
   page = 0;
-  getSongKickID();
+  getWebSiteID();
   resp=res;
   return res.status(200).json({message: "process started"})
 }
@@ -98,7 +97,7 @@ export function job(req, res) {
 function getHtmlPage() {
   page++;
   console.log("Get Page:", page);
-  scrape("https://www.songkick.com/metro_areas/24426-uk-london?utf8=true&page=" + page //&filters[minDate]="+ dateFrom + "&filters[maxDate]="+ dateTo + "#date-filter-form"
+  scrape("http://tickets.london/search?browseorder=soonest&distance=0&availableonly=False&se=False&pageSize=30&c=3&c=156&pageIndex="+page
     , {
       //scrape("http://www.w3schools.com/", {
       // Get the website title (from the top header)
@@ -114,7 +113,7 @@ function getHtmlPage() {
         return;
       } else {
        /// parceResult(data);
-        saveToDB.save(data, songkickID, getHtmlPage);
+        saveToDB.save(data, webSiteID, getHtmlPage);
       }
     });
 }

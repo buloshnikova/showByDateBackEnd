@@ -11,10 +11,12 @@
 
 import _ from 'lodash';
 import Event from './event.model';
+var moment = require('moment');
 
 function respondWithResult(res, statusCode) {
+
   statusCode = statusCode || 200;
-  return function(entity) {
+  return function (entity) {
     if (entity) {
       res.status(statusCode).json(entity);
     }
@@ -22,7 +24,7 @@ function respondWithResult(res, statusCode) {
 }
 
 function saveUpdates(updates) {
-  return function(entity) {
+  return function (entity) {
     var updated = _.merge(entity, updates);
     return updated.save()
       .then(updated => {
@@ -32,7 +34,7 @@ function saveUpdates(updates) {
 }
 
 function removeEntity(res) {
-  return function(entity) {
+  return function (entity) {
     if (entity) {
       return entity.remove()
         .then(() => {
@@ -43,7 +45,7 @@ function removeEntity(res) {
 }
 
 function removeAllEntity(res) {
-  return function() {
+  return function () {
     if (entity) {
       return entity.remove()
         .then(() => {
@@ -54,7 +56,7 @@ function removeAllEntity(res) {
 }
 
 function handleEntityNotFound(res) {
-  return function(entity) {
+  return function (entity) {
     if (!entity) {
       res.status(404).end();
       return null;
@@ -65,7 +67,7 @@ function handleEntityNotFound(res) {
 
 function handleError(res, statusCode) {
   statusCode = statusCode || 500;
-  return function(err) {
+  return function (err) {
     res.status(statusCode).send(err);
   };
 }
@@ -79,8 +81,35 @@ export function index(req, res) {
     .catch(handleError(res));
 }
 
+export function getEventByDatesRangeAndType(req, res) {
+  let dateFrom = moment.unix(req.params.dateFrom / 1000).toDate();
+  let type = req.params.eventType;
+  let dateTo = moment.unix(req.params.dateTo / 1000).toDate();
+  let query = {"startDate": {"$gte": dateFrom, "$lt": dateTo}};
+  let limit = Number(req.params.limit);
+  let skip = Number(req.params.skip);
+  return Event.find(query)
+    .limit(limit)
+    .skip(skip)
+    .populate('eventType performer location website')
+    .exec(function (err, events) {
+      Event.count(query).exec(function (err, count) {
+        res.status(200).json({
+          events: events,
+          total: count
+        });
+        //respondWithResult()
+      })
+    })
+    //.exec()
+    //.then(respondWithResult(res))
+    .catch(handleError(res));
+}
+
+
 // Gets a single Event from the DB
 export function show(req, res) {
+  console.log("show");
   return Event.findById(req.params.id)
     .populate('eventType')
     .exec()
@@ -129,24 +158,24 @@ export function destroyAll(req, res) {
 
 //test function
 
-export function test(req,res){
-console.log("Start:")
+export function test(req, res) {
+  console.log("Start:")
   var request = require("request");
   var cheerio = require("cheerio");
 
   request({
     uri: "http://ionicabizau.net",
-  }, function(error, response, body) {
+  }, function (error, response, body) {
     var $ = cheerio.load(body);
     console.log("Got Body");
 
     ///console.log($);
 
-    var list=[];
-    var index=0
+    var list = [];
+    var index = 0
 
-    console.log("Body:",body)
-    console.log("Left:",$("a")[0])
+    console.log("Body:", body)
+    console.log("Left:", $("a")[0])
     //$("a").each(function() {
     //  index++
     //  console.log($(".header h1").text());
