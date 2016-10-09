@@ -113,7 +113,7 @@ function getHtmlPage() {
         return;
       } else {
        /// parceResult(data);
-        saveToDB.save(data, webSiteID, getHtmlPage);
+       // saveToDB.save(data, webSiteID, getHtmlPage);
       }
     });
 }
