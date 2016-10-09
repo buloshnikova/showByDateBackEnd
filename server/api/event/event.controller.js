@@ -6,7 +6,6 @@
  * PUT     /y/:id          ->  update
  * DELETE  /y/:id          ->  destroy
  */
-
 'use strict';
 
 import _ from 'lodash';
