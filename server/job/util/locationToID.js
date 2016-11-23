@@ -18,7 +18,7 @@ export function getID(location, cb) {
             "postalCode": location.address ? location.address.postalCode : ""
           },
           "name": location.name,
-          "link": location.sameAs,
+          "link": location.sameAs ? location.sameAs : "",
           "geo": {
             "type": "GeoCoordinates",
             "latitude": location.geo ? location.geo.latitude : 0,

@@ -10,6 +10,7 @@
 
 import _ from 'lodash';
 import Event from './event.model';
+import EventType from '../eventType/eventType.model'
 var moment = require('moment');
 
 function respondWithResult(res, statusCode) {
@@ -65,6 +66,7 @@ function handleEntityNotFound(res) {
 }
 
 function handleError(res, statusCode) {
+  console.log(res)
   statusCode = statusCode || 500;
   return function (err) {
     res.status(statusCode).send(err);
@@ -81,30 +83,47 @@ export function index(req, res) {
 }
 
 export function getEventByDatesRangeAndType(req, res) {
-  let dateFrom = moment.unix(req.params.dateFrom / 1000).toDate();
-  let type = req.params.eventType;
-  let dateTo = moment.unix(req.params.dateTo / 1000).toDate();
-  let query = {"startDate": {"$gte": dateFrom, "$lt": dateTo}};
+  let dateFrom = req.params.dateFrom //moment.unix(req.params.dateFrom / 1000).toDate();
+  let eventType = req.params.eventType;
+  let dateTo = req.params.dateTo;// moment.unix(req.params.dateTo / 1000).toDate();
+  
   let limit = Number(req.params.limit);
   let skip = Number(req.params.skip);
-  return Event.find(query)
-    .limit(limit)
-    .skip(skip)
-    .populate('eventType performer location website')
-    .exec(function (err, events) {
-      Event.count(query).exec(function (err, count) {
-        res.status(200).json({
-          events: events,
-          total: count
-        });
-        //respondWithResult()
-      })
-    })
-    //.exec()
-    //.then(respondWithResult(res))
-    .catch(handleError(res));
-}
+  EventType.findOne({eventTypeName:eventType})
+    .then(
+      function(response){
+        if(!response){
+          handleError(res)({'error':'No such event type'});
+        }else{
+          let query = {"startDate": {"$gte": dateFrom, "$lt": dateTo},'eventType':response._id};
+          getSearch(res,query,limit,skip);
+        }
+        
+      },
+      function(response){
+        handleError(res);
+      });
+};
 
+function getSearch(res,query,limit,skip){
+  return Event.find(query)
+      .limit(limit)
+      .skip(skip)
+      .populate('eventType performer location website')
+      .exec(function (err, events) {
+        Event.count(query).exec(function (err, count) {
+          res.status(200).json({
+            events: events,
+            total: count
+          });
+          //respondWithResult()
+        })
+      })
+      //.exec()
+      //.then(respondWithResult(res))
+      .catch(handleError(res));
+
+}
 
 // Gets a single Event from the DB
 export function show(req, res) {

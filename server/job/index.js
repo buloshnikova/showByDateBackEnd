@@ -9,9 +9,11 @@ var express = require('express');
 
 //var controller = require('./songclick'); //name of the controller
 var songclick = require('./songclick'); //name of the controller
+var ticketsLondon = require('./tickets.london'); //name of the controller
 
 var router = express.Router();
 
 router.get('/sn', songclick.job); //function at songclick.js, date format 08/05/2016
+router.get('/tl', ticketsLondon.job); //function at songclick.js, date format 08/05/2016
 
 module.exports = router;

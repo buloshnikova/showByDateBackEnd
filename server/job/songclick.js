@@ -30,7 +30,7 @@ function handleError(res, statusCode) {
   };
 }
 
-function scrape(url, data, cb) {
+function scrape(url, cb) {
   // 1. Create the request
   req(url, (err, body) => {
     if (err) {
@@ -48,6 +48,8 @@ function scrape(url, data, cb) {
         obj = obj[0]
         obj.url = "https://www.songkick.com" + el(".thumb").attr("href");
         obj.eventImage = el('.thumb img').attr("src");
+        var date=moment(obj.startDate).format('x');
+        obj.startDate=date;
         pageData.push(obj);
       });
       cb(null, pageData);
@@ -99,13 +101,7 @@ function getHtmlPage() {
   page++;
   console.log("Get Page:", page);
   scrape("https://www.songkick.com/metro_areas/24426-uk-london?utf8=true&page=" + page //&filters[minDate]="+ dateFrom + "&filters[maxDate]="+ dateTo + "#date-filter-form"
-    , {
-      //scrape("http://www.w3schools.com/", {
-      // Get the website title (from the top header)
-      title: "a.w3schools-logo"
-      // ...and the description
-      , description: ".listing li"
-    }, (err, data) => {
+    , (err, data) => {
 
       //check the db for a songlick website
       if (err) {

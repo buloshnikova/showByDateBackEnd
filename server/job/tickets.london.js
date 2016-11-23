@@ -1,17 +1,18 @@
-"use strict"
+"use strict";
 
 // Import the dependencies
-import _ from 'lodash';
 import website from '../api/website/website.model';
 
 const cheerio = require("cheerio"), req = require("tinyreq");
 const webSiteName = "tickets.london";
+const sitePrefix = 'http://tickets.london';
 var webSiteID = "";
 var async = require('async');
 var saveToDB = require('./util/saveToDB');
-var moment = require('moment');
+var moment = require('moment-timezone');
 var page = 0;
 var resp;
+
 // Define the scrape function
 function respondWithResult(res, statusCode) {
   statusCode = statusCode || 200;
@@ -29,7 +30,7 @@ function handleError(res, statusCode) {
   };
 }
 
-function scrape(url, data, cb) {
+function scrape(url, cb) {
   // 1. Create the request
   req(url, (err, body) => {
     if (err) {
@@ -39,23 +40,49 @@ function scrape(url, data, cb) {
 
     // 2. Parse the HTML
     let $ = cheerio.load(body), pageData = [];
-    var count = $("#event-listings li[title]").length;
-    if (count > 0) {
-      $("#event-listings li[title]").each(function (i, elem) {
-        let el = cheerio.load($(this).html());
-        let obj = JSON.parse(el(".microformat script").text());
-        obj = obj[0]
-        obj.url = "https://www.songkick.com" + el(".thumb").attr("href");
-        obj.eventImage = el('.thumb img').attr("src");
-        pageData.push(obj);
-      });
-      cb(null, pageData);
-    } else {
+    let events = $('#search-results .results-div, #search-results article');
+    if (events.length == 0) {
+      console.log('events.length', events.length)
       cb(true, "no more data");
-
+    } else {
+      let datePre = [];
+      let arr = [];
+      events.each(function (i, element) {
+        ///console.log(element.attribs.class)
+        if (element.attribs.class === 'results-div') {
+          let el = cheerio.load($(this).html());
+          datePre = el('span').text().trim().split(' ');
+          //console.log(el('span').text().trim());
+        } else {
+          let el = cheerio.load($(this).html());
+          let p = el('p');
+          let date = moment(datePre[1] + ' ' + p[1].children[0].data, 'YYYY dddd Do MMMM at h:mm A').format('x');
+          if (!isNaN(date)) {
+            let obj = {
+              '@type': 'SportEvent',
+              name: el('h3 a').text(),
+              url: sitePrefix + el('h3 a').attr("href"),
+              location: {
+                "name": el('p a').text(),
+                "link": el('p a').attr("href")
+              },
+              startDate: date,
+              performer: {
+                '@type': 'sportPerformer',
+                'name': sitePrefix + el('h3 a').text(),
+                'sameAs': sitePrefix + el('h3 a').attr("href")
+              },
+              price: '',
+              eventImage: el('img').attr("src"),
+              active: true,
+              website: webSiteID
+            };
+            arr.push(obj);
+          }
+        }
+      })
+      cb(null, arr);
     }
-
-
   });
 }
 
@@ -74,10 +101,10 @@ function getWebSiteID(res) {
       } else {
         website.create({
           name: webSiteName,
-          websiteUrl: "http://www.visitlondon.com",
+          websiteUrl: "http://tickets.london",
           rating: 5,
-          logoUrl: "https://pbs.twimg.com/profile_images/771414363307708416/MxAAQdjT.jpg",
-          defaultImageUrl: "http://assets.sk-static.com/assets/default_images/huge_avatar/default-event-798b09a.png",
+          logoUrl: "",
+          defaultImageUrl: "",
           active: true
         }).then(function (response) {
           webSiteID = response._id;
@@ -90,30 +117,22 @@ export function job(req, res) {
   console.log("Started");
   page = 0;
   getWebSiteID();
-  resp=res;
+  resp = res;
   return res.status(200).json({message: "process started"})
 }
 
 function getHtmlPage() {
   page++;
   console.log("Get Page:", page);
-  scrape("http://tickets.london/search?browseorder=soonest&distance=0&availableonly=False&se=False&pageSize=30&c=3&c=156&pageIndex="+page
-    , {
-      //scrape("http://www.w3schools.com/", {
-      // Get the website title (from the top header)
-      title: "a.w3schools-logo"
-      // ...and the description
-      , description: ".listing li"
-    }, (err, data) => {
-
-      //check the db for a songlick website
+  scrape("http://tickets.london/search?browseorder=soonest&distance=0&availableonly=False&showfavourites=True&se=False&s=sport&pageSize=30&c=18&pageIndex=" + page
+    , (err, data) => {
       if (err) {
         //process.exit();
         console.log("End of process");
         return;
       } else {
-       /// parceResult(data);
-       // saveToDB.save(data, webSiteID, getHtmlPage);
+        /// parceResult(data);
+        saveToDB.save(data, webSiteID, getHtmlPage);
       }
     });
 }

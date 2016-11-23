@@ -7,7 +7,7 @@ var EventSchema = new mongoose.Schema({
   name: String,
   url: String,
   location: {type: mongoose.Schema.Types.ObjectId, ref: 'Location'},
-  startDate: Date,
+  startDate: Number,
   performer: [{type: mongoose.Schema.Types.ObjectId, ref: 'Performer'}],
   website: {type: mongoose.Schema.Types.ObjectId, ref: 'Website'},
   price: String,
