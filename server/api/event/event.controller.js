@@ -86,19 +86,22 @@ export function getEventByDatesRangeAndType(req, res) {
   let dateFrom = req.params.dateFrom //moment.unix(req.params.dateFrom / 1000).toDate();
   let eventType = req.params.eventType;
   let dateTo = req.params.dateTo;// moment.unix(req.params.dateTo / 1000).toDate();
-  
+
   let limit = Number(req.params.limit);
   let skip = Number(req.params.skip);
   EventType.findOne({eventTypeName:eventType})
     .then(
       function(response){
         if(!response){
-          handleError(res)({'error':'No such event type'});
+          handleError(res)({
+            events: [],
+            total: 0
+          });
         }else{
           let query = {"startDate": {"$gte": dateFrom, "$lt": dateTo},'eventType':response._id};
           getSearch(res,query,limit,skip);
         }
-        
+
       },
       function(response){
         handleError(res);
@@ -107,6 +110,7 @@ export function getEventByDatesRangeAndType(req, res) {
 
 function getSearch(res,query,limit,skip){
   return Event.find(query)
+      .sort({'startDate': 'desc'})
       .limit(limit)
       .skip(skip)
       .populate('eventType performer location website')

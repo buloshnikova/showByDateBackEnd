@@ -37,7 +37,6 @@ function scrape(url, cb) {
       console.log("error:", err)
       return cb(err);
     }
-
     // 2. Parse the HTML
     let $ = cheerio.load(body), pageData = [];
     var count = $("#event-listings li[title]").length;
