@@ -56,8 +56,6 @@ function scrape(url, cb) {
       cb(true, "no more data");
 
     }
-
-
   });
 }
 

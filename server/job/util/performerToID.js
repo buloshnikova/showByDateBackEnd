@@ -5,7 +5,7 @@ import Performer from '../../api/performer/performer.model';
 var async = require('async');
 export function getID(list, cb) {
   let idsList = [];
-  console.log(list.length)
+  //console.log(list.length)
   async.eachSeries(list,
     function (item, next) {
       Performer.findOne({name: item.name})
