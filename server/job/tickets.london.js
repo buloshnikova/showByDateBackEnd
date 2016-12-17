@@ -13,6 +13,12 @@ var moment = require('moment-timezone');
 var page = 0;
 var resp;
 const types = [
+
+  {
+    eventType: 'MusicEvent',
+    performerType: 'MusicPerformer',
+    link: 'http://tickets.london/search?browseorder=soonest&dend=26%2F12%2F2016&distance=0&availableonly=False&showfavourites=True&se=False&s=music&pageSize=30&pageIndex='
+  },
   {
     eventType: 'SportEvent',
     performerType: 'sportPerformer',
@@ -22,11 +28,6 @@ const types = [
     eventType: 'TheaterEvent',
     performerType: 'TheaterPerformer',
     link: 'http://tickets.london/search?browseorder=soonest&dend=26%2F12%2F2016&distance=0&availableonly=False&showfavourites=True&se=False&s=theatre&pageSize=30&pageIndex='
-  },
-  {
-    eventType: 'MusicEvent',
-    performerType: 'MusicPerformer',
-    link: 'http://tickets.london/search?browseorder=soonest&dend=26%2F12%2F2016&distance=0&availableonly=False&showfavourites=True&se=False&s=music&pageSize=30&pageIndex='
   }
 ]
 var index = 0
@@ -72,11 +73,22 @@ function scrape(url, cb) {
         } else {
           let el = cheerio.load($(this).html());
           let p = el('p');
-          let date = moment(datePre[1] + ' ' + p[1].children[0].data, 'YYYY dddd Do MMMM at h:mm A').format('x');
+          let date = moment.tz(datePre[1] + ' ' + p[1].children[0].data, 'YYYY dddd Do MMMM at h:mm A', "Europe/London").format('x');
+          let name = '';
+          if (el('h3 a').length > 1) {
+            let arr = el('h3 a')
+            //console.log('count ' + el('h3 a').length, arr);
+            name = arr[0].children[0].data;
+            //console.log('count ' + el('h3 a').length, arr[0].children[0].data);
+
+          } else {
+            name = el('h3 a').text();
+            //console.log('count 1', el('h3 a').text());
+          }
           if (!isNaN(date)) {
             let obj = {
               '@type': currentType.eventType,
-              name: el('h3 a').text(),
+              name: name,
               url: sitePrefix + el('h3 a').attr("href"),
               location: {
                 "name": el('p a').text(),
@@ -93,6 +105,7 @@ function scrape(url, cb) {
               active: true,
               website: webSiteID
             };
+            console.log('Image:', obj.eventImage);
             arr.push(obj);
           }
         }
@@ -138,7 +151,7 @@ export function job(req, res) {
   resp = res;
   return res.status(200).json({message: "process started"})
 }
-function goToNextCategory(){
+function goToNextCategory() {
   index = index + 1;
   currentType = types[index];
   page = 0;

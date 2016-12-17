@@ -46,7 +46,7 @@ function scrape(url, cb) {
         let obj = JSON.parse(el(".microformat script").text());
         obj = obj[0]
         obj.url = "https://www.songkick.com" + el(".thumb").attr("href");
-        obj.eventImage = el('.thumb img').attr("src");
+        obj.eventImage ="http:" +  el('.thumb img').attr("src");
         var date=moment(obj.startDate).format('x');
         obj.startDate=date;
         pageData.push(obj);

@@ -22,7 +22,7 @@ export function getID(list, cb) {
             })
               .then(function (res) {
                 //console.log("Per Created arr: ", res[0].id);
-                console.log("Per Created: ", res.id);
+                //console.log("Per Created: ", res.id);
                 idsList.push(res._id);
                 next();
               })
@@ -30,7 +30,7 @@ export function getID(list, cb) {
         })
     },
     function (err) {
-      console.log(idsList)
+      //console.log(idsList)
       cb(null, idsList)
     }
   )

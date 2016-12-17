@@ -23,7 +23,7 @@ export function save(arr, websiteID, cb) {
             });
         },
         function (callback) {
-          console.log("not exist");
+          //console.log("not exist");
           //get propretis ids
           async.parallel({
               eventTypeID: function (callback) {
@@ -55,9 +55,9 @@ export function save(arr, websiteID, cb) {
           outItem.startDate = item.startDate;
           outItem.website = websiteID;
           outItem.price = null;
-          outItem.eventImage = "http:" + item.eventImage;
+          outItem.eventImage = item.eventImage;
           outItem.active = true;
-          console.log("Create: ", outItem.name);
+         // console.log("Create: ", outItem.name);
 
           show_by_date_event.create(outItem)
             .then(function (res) {
