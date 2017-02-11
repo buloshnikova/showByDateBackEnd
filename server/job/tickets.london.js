@@ -109,7 +109,7 @@ function scrape(url, cb) {
                             active: true,
                             website: webSiteID
                         };
-                        console.log('Image:', obj.eventImage);
+                        //console.log('Image:', obj.eventImage);
                         arr.push(obj);
                     }
                 }

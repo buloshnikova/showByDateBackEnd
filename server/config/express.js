@@ -21,72 +21,72 @@ import mongoose from 'mongoose';
 var MongoStore = connectMongo(session);
 
 export default function(app) {
-  var env = app.get('env');
+    var env = app.get('env');
 
-  if (env === 'development' || env === 'test') {
-    app.use(express.static(path.join(config.root, '.tmp')));
-  }
+    if (env === 'development' || env === 'test') {
+        app.use(express.static(path.join(config.root, '.tmp')));
+    }
 
-  if (env === 'production') {
-    app.use(favicon(path.join(config.root, 'client', 'favicon.ico')));
-  }
+    if (env === 'production') {
+        app.use(favicon(path.join(config.root, 'client', 'favicon.ico')));
+    }
 
-  app.set('appPath', path.join(config.root, 'client'));
-  app.use(express.static(app.get('appPath')));
-  app.use(morgan('dev'));
+    app.set('appPath', path.join(config.root, 'client'));
+    app.use(express.static(app.get('appPath')));
+    app.use(morgan('dev'));
 
-  app.set('views', config.root + '/server/views');
-  app.engine('html', require('ejs').renderFile);
-  app.set('view engine', 'html');
-  app.use(compression());
-  app.use(bodyParser.urlencoded({ extended: false }));
-  app.use(bodyParser.json());
-  app.use(methodOverride());
-  app.use(cookieParser());
+    app.set('views', config.root + '/server/views');
+    app.engine('html', require('ejs').renderFile);
+    app.set('view engine', 'html');
+    app.use(compression());
+    app.use(bodyParser.urlencoded({ extended: false }));
+    app.use(bodyParser.json());
+    app.use(methodOverride());
+    app.use(cookieParser());
 
-  // Persist sessions with MongoStore / sequelizeStore
-  // We need to enable sessions for passport-twitter because it's an
-  // oauth 1.0 strategy, and Lusca depends on sessions
-  app.use(session({
-    secret: config.secrets.session,
-    saveUninitialized: true,
-    resave: false,
-    store: new MongoStore({
-      mongooseConnection: mongoose.connection,
-      db: 'show-by-date'
-    })
-  }));
-
-  /**
-   * Lusca - express server security
-   * https://github.com/krakenjs/lusca
-   */
-  if (env !== 'test' && !process.env.SAUCE_USERNAME) {
-    app.use(lusca({
-      csrf: {
-        angular: true
-      },
-      xframe: 'SAMEORIGIN',
-      hsts: {
-        maxAge: 31536000, //1 year, in seconds
-        includeSubDomains: true,
-        preload: true
-      },
-      xssProtection: true
+    // Persist sessions with MongoStore / sequelizeStore
+    // We need to enable sessions for passport-twitter because it's an
+    // oauth 1.0 strategy, and Lusca depends on sessions
+    app.use(session({
+        secret: config.secrets.session,
+        saveUninitialized: true,
+        resave: false,
+        store: new MongoStore({
+            mongooseConnection: mongoose.connection,
+            db: 'show-by-date'
+        })
     }));
-  }
 
-  if ('development' === env) {
-    app.use(require('connect-livereload')({
-      ignore: [
-        /^\/api\/(.*)/,
-        /\.js(\?.*)?$/, /\.css(\?.*)?$/, /\.svg(\?.*)?$/, /\.ico(\?.*)?$/, /\.woff(\?.*)?$/,
-        /\.png(\?.*)?$/, /\.jpg(\?.*)?$/, /\.jpeg(\?.*)?$/, /\.gif(\?.*)?$/, /\.pdf(\?.*)?$/
-      ]
-    }));
-  }
+    /**
+     * Lusca - express server security
+     * https://github.com/krakenjs/lusca
+     */
+    if (env !== 'test' && !process.env.SAUCE_USERNAME) {
+        app.use(lusca({
+            // csrf: {
+            //   angular: true
+            // },
+            xframe: 'SAMEORIGIN',
+            hsts: {
+                maxAge: 31536000, //1 year, in seconds
+                includeSubDomains: true,
+                preload: true
+            },
+            xssProtection: true
+        }));
+    }
 
-  if ('development' === env || 'test' === env) {
-    app.use(errorHandler()); // Error handler - has to be last
-  }
+    if ('development' === env) {
+        app.use(require('connect-livereload')({
+            ignore: [
+                /^\/api\/(.*)/,
+                /\.js(\?.*)?$/, /\.css(\?.*)?$/, /\.svg(\?.*)?$/, /\.ico(\?.*)?$/, /\.woff(\?.*)?$/,
+                /\.png(\?.*)?$/, /\.jpg(\?.*)?$/, /\.jpeg(\?.*)?$/, /\.gif(\?.*)?$/, /\.pdf(\?.*)?$/
+            ]
+        }));
+    }
+
+    if ('development' === env || 'test' === env) {
+        app.use(errorHandler()); // Error handler - has to be last
+    }
 }
