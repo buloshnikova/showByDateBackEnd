@@ -5,6 +5,9 @@ import website from '../api/website/website.model';
 
 const cheerio = require("cheerio"),
     req = require("tinyreq");
+const xRay = require('x-ray');
+var x = xRay();
+
 const webSiteName = "tickets.london";
 const sitePrefix = 'http://tickets.london';
 var webSiteID = "";
@@ -15,20 +18,20 @@ var page = 0;
 var resp;
 const types = [
 
-    {
-        eventType: 'MusicEvent',
-        performerType: 'MusicPerformer',
-        link: 'http://tickets.london/search?browseorder=soonest&distance=0&availableonly=False&showfavourites=True&se=False&s=music&pageSize=30&pageIndex='
-    },
-    {
-        eventType: 'SportEvent',
-        performerType: 'sportPerformer',
-        link: 'http://tickets.london/search?browseorder=soonest&distance=0&availableonly=False&showfavourites=True&se=False&s=sport&pageSize=30&pageIndex='
-    },
+    // {
+    //     eventType: 'MusicEvent',
+    //     performerType: 'MusicPerformer',
+    //     link: 'http://tickets.london/search?browseorder=soonest&distance=0&availableonly=False&showfavourites=True&se=False&s=music&pageSize=30&pageIndex='
+    // },
+    // {
+    //     eventType: 'SportEvent',
+    //     performerType: 'sportPerformer',
+    //     link: 'http://tickets.london/search?browseorder=soonest&distance=0&availableonly=False&showfavourites=True&se=False&s=sport&pageSize=30&pageIndex='
+    // },
     {
         eventType: 'TheaterEvent',
         performerType: 'TheaterPerformer',
-        link: 'http://tickets.london/search?browseorder=soonest&distance=0&availableonly=False&showfavourites=True&se=False&s=theatre&pageSize=30&pageIndex='
+        link: 'http://tickets.london/search?BrowseOrder=Soonest&s=theatre&c=40&c=191&c=195&c=204&c=192&c=274&c=198&c=200&c=196&c=202&q=&dst=&dend=2017-03-31&l='
     }
 ]
 var index = 0
@@ -51,7 +54,12 @@ function handleError(res, statusCode) {
 }
 
 function scrape(url, cb) {
-    // 1. Create the request
+    console.log(url)
+    x(url, 'body@html')((err, data) => {
+            debugger;
+            console.log(data);
+        })
+        // 1. Create the request
     req(url, (err, body) => {
         if (err) {
             console.log("error:", err)
@@ -61,7 +69,10 @@ function scrape(url, cb) {
         // 2. Parse the HTML
         let $ = cheerio.load(body),
             pageData = [];
-        let events = $('#search-results .results-div, #search-results article');
+
+        let events = [] //$('script');
+
+        debugger;
         if (events.length == 0) {
             console.log('events.length', events.length)
             cb(true, "no more data");

@@ -100,9 +100,6 @@ export function job(req, res) {
 }
 
 function getHtmlPage() {
-    if (page > 2) {
-        return;
-    }
     page++;
     console.log("Get Page:", page);
     scrape("https://www.songkick.com/metro_areas/24426-uk-london?utf8=true&page=" + page //&filters[minDate]="+ dateFrom + "&filters[maxDate]="+ dateTo + "#date-filter-form"

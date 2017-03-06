@@ -15,18 +15,7 @@ var page = 0;
 var resp;
 const types = [
 
-    {
-        eventType: 'MusicEvent',
-        performerType: 'MusicPerformer',
-        link: 'http://london.eventful.com/v2/tools/events/faceted_search?' +
-            'type=asynch' +
-            '&location_type=metro_id&location_id=67' +
-            '&sort=rec&page_size=100' +
-            '&when=future&worldwide=0' +
-            '&category=music' +
-            '&_s_category=music' +
-            '&page_number='
-    },
+
     {
         eventType: 'SportEvent',
         performerType: 'sportPerformer',
@@ -37,6 +26,18 @@ const types = [
             '&when=future&worldwide=0' +
             '&category=sports' +
             '&_s_category=sports' +
+            '&page_number='
+    },
+    {
+        eventType: 'MusicEvent',
+        performerType: 'MusicPerformer',
+        link: 'http://london.eventful.com/v2/tools/events/faceted_search?' +
+            'type=asynch' +
+            '&location_type=metro_id&location_id=67' +
+            '&sort=rec&page_size=100' +
+            '&when=future&worldwide=0' +
+            '&category=music' +
+            '&_s_category=music' +
             '&page_number='
     }
     // ,
@@ -85,6 +86,8 @@ function scrape(url, cb) {
             events.each(function(i, element) {
 
                 let el = cheerio.load($(this).html());
+                let performerName = el('h4 a').attr('title').split(' - ');
+                performerName = performerName[0];
                 let obj = {
                     '@type': currentType.eventType,
                     name: el('h4 a').attr('title'),
@@ -96,11 +99,11 @@ function scrape(url, cb) {
                     },
                     startDate: moment.tz(moment(el('.event-meta strong').attr('content')), "Europe/London").format('x'), ///el('.event-meta strong').attr('content'),
                     endDate: moment.tz(moment(el('.event-meta strong').attr('content')), "Europe/London").format('x'),
-                    performer: {
+                    performer: [{
                         '@type': currentType.performerType,
-                        'name': el('h4 a').attr('title'),
-                        //'sameAs': sitePrefix + el('h3 a').attr("href")
-                    },
+                        'name': performerName
+                            //'sameAs': sitePrefix + el('h3 a').attr("href")
+                    }],
                     price: '',
                     eventImage: el('.tn-frame img').attr("src"),
                     active: true,

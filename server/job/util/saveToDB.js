@@ -72,11 +72,15 @@ export function save(arr, websiteID, cb) {
                     outItem.price = null;
                     outItem.eventImage = item.eventImage;
                     outItem.active = true;
-                    // console.log("Create: ", outItem.name);
+                    console.log("Create: ", outItem.name);
 
                     show_by_date_event.create(outItem)
                         .then(function(res) {
                             callback(null, 'done');
+                        }, function(err) {
+                            console.log('error:', err);
+                            callback(null, 'done');
+                            // handle error here.
                         })
                         // arg1 now equals 'three')
 

@@ -5,8 +5,8 @@
 var env = process.env.NODE_ENV = process.env.NODE_ENV || 'production';
 
 if (env === 'development' || env === 'test') {
-  // Register the Babel require hook
-  require('babel-register');
+    // Register the Babel require hook
+    require('babel-register');
 }
 //Launch an application - calls an app.js in root
 // Export the application

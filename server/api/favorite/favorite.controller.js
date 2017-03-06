@@ -14,6 +14,7 @@ import jsonpatch from 'fast-json-patch';
 import Favorite from './favorite.model';
 import Event from '../event/event.model'
 import Performer from '../performer/performer.model';
+var async = require('async');
 
 function respondWithResult(res, statusCode) {
     statusCode = statusCode || 200;
@@ -103,6 +104,38 @@ export function create(req, res) {
         })
         .then(respondWithResult(res, 201))
         .catch(handleError(res));
+}
+
+// Creates Multi  new Favorites in the DB
+export function createMulti(req, res) {
+
+    let newFavorites = req.body.map(item => { return { name: item, name_lower: item.toLowerCase() } });
+    return Favorite.create(newFavorites)
+        .then(res => {
+            res.map(fr => {
+                // debugger
+                Event.update({ name_lower: fr._doc.name_lower }, { favorite: true });
+                Performer.update({ name_lower: fr._doc.name_lower }, { favorite: true })
+                    .then(ttt => console.log("Perf:", ttt));
+                Performer.find({ name_lower: fr._doc.name_lower })
+                    .then(list => {
+                        list = list.map(item => item.id)
+                        Event.update({ performer: { $in: list } }, { favorite: true })
+                            .then(res => console.log(res));
+                        let ev = Event.find({ performer: { $in: list } })
+                            .then(res => console.log(res));
+                        //console.log('list', ev);
+                    });
+
+            });
+            return res;
+        })
+        .then(respondWithResult(res, 201))
+        .catch(handleError(res));
+
+    //console.log(newFavorites);
+
+    //return res.status(200).json(req.body);
 }
 
 // Upserts the given Favorite in the DB at the specified ID
