@@ -12,11 +12,15 @@ var songclick = require('./songclick'); //name of the controller
 var ticketsLondon = require('./tickets.london'); //name of the controller
 var londonEventful = require('./london.eventful'); //name of the controller
 var londontheatredirect = require('./londontheatredirect');
+var ticketmaster = require('./ticketmaster');
+var stubHub = require('./stub-hub');
 var router = express.Router();
 
 router.get('/sn', songclick.job); //function at songclick.js, date format 08/05/2016
-router.get('/tl', ticketsLondon.job); //function at songclick.js, date format 08/05/2016
+//router.get('/tl', ticketsLondon.job); //function at songclick.js, date format 08/05/2016
 router.get('/ltd', londontheatredirect.job); //function at songclick.js, date format 08/05/2016
 router.get('/le', londonEventful.job); //function at london.eventful, date format 08/05/2016
+router.get('/tm', ticketmaster.job); //function at london.eventful, date format 08/05/2016
+router.get('/sh', stubHub.job); //function at london.eventful, date format 08/05/2016
 
 module.exports = router;

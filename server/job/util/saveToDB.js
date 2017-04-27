@@ -12,6 +12,7 @@ export function save(arr, websiteID, cb) {
             async.waterfall([
                 function(callback) {
                     let tempName = item.name.toLowerCase();
+                    let query = item['@type'] == 'TheaterEvent' ? { name_lower: tempName } : { name_lower: tempName, startDate: item.startDate, endDate: item.endDate }
                     show_by_date_event.findOne({ name_lower: tempName, startDate: item.startDate, endDate: item.endDate })
                         .then(function(response) {
                             if (response !== null) {

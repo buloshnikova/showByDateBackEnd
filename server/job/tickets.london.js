@@ -56,7 +56,6 @@ function handleError(res, statusCode) {
 function scrape(url, cb) {
     console.log(url)
     x(url, 'body@html')((err, data) => {
-            debugger;
             console.log(data);
         })
         // 1. Create the request
@@ -71,8 +70,6 @@ function scrape(url, cb) {
             pageData = [];
 
         let events = [] //$('script');
-
-        debugger;
         if (events.length == 0) {
             console.log('events.length', events.length)
             cb(true, "no more data");
@@ -180,7 +177,7 @@ function getHtmlPage() {
     //console.log("Get Page:", page);
     //console.log('Page:', currentType.link + page.toString());
     scrape(currentType.link + page.toString(), (err, data) => {
-
+        debugger;
         if (err) {
             console.log(index);
             if (index < 2) {
